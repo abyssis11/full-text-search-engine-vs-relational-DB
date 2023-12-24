@@ -13,17 +13,16 @@
     <h1><b>Step 1.</b></h1>
     <div>
         <h2>Load data into databases:</h2>
-        <form hx-post="/load" hx-indicator=".htmx-indicator">
-          <label for="reviews">Number of reviews to load (from 0 to 500000):</label><br>
-          <input type="number" id="reviews" name="reviews" value="100000"><br><br>
-          <button type="submit">Load</button>
-        </form>
+        <span>
+            <form hx-post="/load" hx-indicator="#load-loader">
+                <label for="reviews">Number of reviews to load (from 0 to 500000):</label><br>
+                <input type="number" id="reviews" name="reviews" value="100000"><br><br>
+                <button type="submit">Load</button>
+            </form>
+            <!--indicator-->
+            <img id=load-loader class="htmx-indicator" src="{{ url_for('static', filename='images/bars.svg') }}" width="100" height="100"/>
+        </span>
     </div>
-
-    <!--indicator-->
-    <span class="htmx-indicator"> 
-      <img src="{{ url_for('static', filename='images/bars.svg') }}" width="100" height="100"/>
-    </span> 
     
     <h1><b>Step 2.</b></h1>
     <h1>ApacheBench Test Interface</h1>
@@ -34,7 +33,7 @@
       </tr>
       <tr>
           <td>
-              <form hx-post="/test-endpoint" hx-target="#es-result" hx-indicator=".htmx-indicator">
+              <form hx-post="/test-endpoint" hx-target="#es-result" hx-indicator="#test-es">
                   <input type="hidden" id="url-es" name="url" value="http://flask_app:4000/es-search?q=">
                   <label for="search-es">Search:</label><br>
                   <input type="text" id="search-es" name="search-es" placeholder="Search Elasticsearch"><br><br>
@@ -45,12 +44,13 @@
                   <input type="number" id="concurrency-es" name="concurrency" value="10"><br><br>
                   <button type="submit">Start Elasticsearch Test</button>
               </form>
+              <img id="test-es" class="htmx-indicator" src="{{ url_for('static', filename='images/bars.svg') }}" width="100" height="100"/>
               <div id="es-result"> 
                   <!-- Results will appear here -->
               </div>
           </td>
           <td>
-              <form hx-post="/test-endpoint" hx-target="#pg-result" hx-indicator=".htmx-indicator">
+              <form hx-post="/test-endpoint" hx-target="#pg-result" hx-indicator="#test-pg">
                   <input type="hidden" id="url-es" name="url" value="http://flask_app:4000/pg-search?q=">
                   <label for="search-pg">Search:</label><br>
                   <input type="text" id="search-pg" name="search-pg" placeholder="Search PostgreSQL"><br><br>
@@ -61,6 +61,7 @@
                   <input type="number" id="concurrency-pg" name="concurrency" value="10"><br><br>
                   <button type="submit">Start PostgreSQL Test</button>
               </form>
+              <img id="test-pg" class="htmx-indicator" src="{{ url_for('static', filename='images/bars.svg') }}" width="100" height="100"/>
               <div id="pg-result">
                   <!-- Results will appear here -->
               </div>

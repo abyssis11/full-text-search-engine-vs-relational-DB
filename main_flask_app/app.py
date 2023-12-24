@@ -4,7 +4,6 @@ from os import environ
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import streaming_bulk
 import tqdm
-import subprocess
 import requests
 import csv
 
@@ -100,9 +99,6 @@ def find():
     word = (request.args.get('q') or request.args.get('search-pg')).lower()
     look_for = '%{0}%'.format(word)
     rows_with_ho = Review.query.filter(Review.review_text.ilike(look_for)).limit(MAX_SIZE).all()
-    #query = select(Car).where(Car.column.contains("late"))
-    #results = await db.execute(query)
-    #data = results.scalars().all()
     for row in rows_with_ho:
             rez.append(row.review_text)
     db.session.close()
@@ -137,7 +133,6 @@ def es_search():
 
 @app.route('/test-endpoint', methods=['POST'])
 def test_endpoint():
-    # Get the URL to test from query parameters
     search = request.form.get('search-es') or request.form.get('search-pg')
     url_to_test = request.form.get('url')
     total_requests = request.form.get('total_requests', default=1000, type=int)  # Default to 1000 if not specified
