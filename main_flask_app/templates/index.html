@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Song Search</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+</head>
+<body>
+    Search Contacts 
+    <span class="htmx-indicator"> 
+      <img src="/img/bars.svg"/> Searching... 
+     </span> 
+    <h1>Data Loading and Searching</h1>
+    <!-- Load data section -->
+    <div>
+        <h2>Load data:</h2>
+        <button  hx-get="/loades" hx-indicator=".htmx-indicator">Load data</button>
+    </div>
+    <!-- Search data section -->
+    <div>
+        <h2>Search data:</h2>
+        <input type="text" class="input" placeholder="Search" name="q" hx-get="/es-search" hx-trigger="keyup changed delay:500ms" hx-target="#results"  hx-indicator=".htmx-indicator">
+    </div>
+    <div id="results">
+
+    </div>
+
+    <h1>ApacheBench Test Interface</h1>
+    <form hx-post="/test-endpoint" hx-target="#result">
+         <!-- Hidden URL field -->
+        <input type="hidden" id="url" name="url" value="http://flask_app/es-search?q=uber">
+
+        <label for="total_requests">Total Requests:</label><br>
+        <input type="number" id="total_requests" name="total_requests" value="1000"><br><br>
+
+        <label for="concurrency">Concurrency:</label><br>
+        <input type="number" id="concurrency" name="concurrency" value="10"><br><br>
+
+        <button type="submit">Start Test</button>
+    </form>
+    <div id="result">
+      <!-- Results will appear here -->
+    </div>
+
+</body>
+
+</html>

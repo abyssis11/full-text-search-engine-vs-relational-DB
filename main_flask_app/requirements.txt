@@ -1,0 +1,6 @@
+flask
+psycopg2-binary
+Flask-SQLAlchemy
+Elasticsearch
+tqdm
+requests
