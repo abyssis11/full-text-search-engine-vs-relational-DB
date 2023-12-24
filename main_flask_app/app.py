@@ -14,21 +14,17 @@ db = SQLAlchemy(app)
 
 MAX_SIZE = 10000
 
-class Car(db.Model):
-    __tablename__ = 'cars'
-
+class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255))
-    engine = db.Column(db.Text)
-    #year = db.Column(db.Integer)
-    #price = db.Column(db.Integer)
+    author_name = db.Column(db.String(255))
+    review_text = db.Column(db.Text)
 
     def json(self):
-        return {'id': self.id,'name': self.name, 'engine': self.engine}
+        return {'id': self.id,'author_name': self.author_name, 'review_text': self.review_text}
 
 
-def load_csv_into_db():
-    num = 300000
+def load_csv_into_db(n):
+    num = n
     br = 0
     with open('UBER_REVIEWS.csv', 'r') as file:
         reader = csv.DictReader(file)
@@ -39,7 +35,7 @@ def load_csv_into_db():
             author_name = row.get('author_name')
             review_text = row.get('review_text')
 
-            record = Car(name = name, engine = engine)
+            record = Review(author_name = author_name, review_text = review_text)
             db.session.add(record)
         db.session.commit()
 
@@ -59,8 +55,8 @@ def create_index(client):
         ignore=400,
     )
 
-def load_csv_into_es():
-    num = 300000
+def load_csv_into_es(n):
+    num = n
     br = 0
     with open("UBER_REVIEWS.csv", "r") as file:
         reader = csv.DictReader(file)
@@ -74,91 +70,49 @@ def load_csv_into_es():
             }
             yield document
 
-# Function to delete all data from the table
-def delete_all_data():
-    try:
-        # Use the `delete()` method to delete all rows
-        db.session.query(Car).delete()
-        db.session.commit()
-        print("All data deleted successfully.")
-    except Exception as e:
-        print(f"Error deleting data: {str(e)}")
-        db.session.rollback()
-    finally:
-        db.session.close()
-
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/hello")
-def hello():
-    return "hello"
 
-@app.route("/load")
+@app.route("/load", methods=['POST'])
 def load():
-    load_csv_into_db()
-    return "loaded"
-
-@app.route("/loades")
-def loades():
+    n_reviews = int(request.form.get('reviews'))
     es = Elasticsearch(["http://elasticsearch:9200/"])
     create_index(es)
-    progress = tqdm.tqdm(unit="docs", total=300000)
+    query = {"query": {"match_all": {}}}
+    es.delete_by_query(index="reviews", body=query, conflicts='proceed')
+    progress = tqdm.tqdm(unit="docs", total=n_reviews)
     successes = 0
     for ok, action in streaming_bulk(
-        client=es, index="reviews", actions=load_csv_into_es(),
+        client=es, index="reviews", actions=load_csv_into_es(n_reviews),
     ):
         progress.update(1)
         successes += ok
-    #num = 100
-    #br = 0
-    '''with open("UBER_REVIEWS.csv", "r") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            br += 1
-            if br == num:
-                break
-            document = {
-                "author_name": row.get('author_name'),
-                "review_text": row.get('review_text')
-            }
-            es.index(index="reviews", document=document)'''
+    load_csv_into_db(n_reviews)
     return "loaded"
 
 
-@app.route('/cars', methods=['GET'])
-def get_cars():
-  try:
-    cars = Car.query.all()
-    return make_response(jsonify([car.json() for car in cars]), 200)
-  except e:
-    return make_response(jsonify({'message': 'error getting cars'}), 500)
-
-@app.route('/delete', methods=['GET'])
-def delete():
-    delete_all_data()
-    return 'deleted'
-
-@app.route('/find', methods=['GET'])
+@app.route('/pg-search', methods=['GET'])
 def find():
     rez = []
     dic = {}
-    word = request.args.get('q')
+    word = (request.args.get('q') or request.args.get('search-pg')).lower()
     look_for = '%{0}%'.format(word)
-    rows_with_ho = Car.query.filter(Car.engine.ilike(look_for)).all()
+    rows_with_ho = Review.query.filter(Review.review_text.ilike(look_for)).limit(MAX_SIZE).all()
     #query = select(Car).where(Car.column.contains("late"))
     #results = await db.execute(query)
     #data = results.scalars().all()
     for row in rows_with_ho:
-            rez.append({"ID": row.id, "Name": row.name, "Engine": row.engine})
+            rez.append(row.review_text)
     db.session.close()
 
+    rez.insert(0, len(rez))
     return  jsonify(results = rez)
 
 @app.route('/es-search', methods=['GET'])
 def es_search():
-    query = request.args.get('q').lower()
+    query = (request.args.get('q') or request.args.get('search-es')).lower()
     tokens = query.split(" ")
     es = Elasticsearch(["http://elasticsearch:9200/"])
     clauses = [
@@ -178,16 +132,20 @@ def es_search():
 
     resp = es.search(index="reviews", query=payload, size=MAX_SIZE)
     rez = [result['_source']['review_text'] for result in resp['hits']['hits']]
+    rez.insert(0, len(rez))
     return jsonify(results = rez)
 
 @app.route('/test-endpoint', methods=['POST'])
 def test_endpoint():
     # Get the URL to test from query parameters
+    search = request.form.get('search-es') or request.form.get('search-pg')
     url_to_test = request.form.get('url')
     total_requests = request.form.get('total_requests', default=1000, type=int)  # Default to 1000 if not specified
     concurrency = request.form.get('concurrency', default=10, type=int)         # Default to 10 if not specified
     if not url_to_test:
         return jsonify({"error": f"No URL provided: {url_to_test}"}), 400
+
+    url_to_test = url_to_test + search.replace(' ','%20')
 
     data = {
         "url": url_to_test,
@@ -208,4 +166,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.drop_all()
         db.create_all()
+    app.run(debug=True, host='0.0.0.0', port=4000)
 

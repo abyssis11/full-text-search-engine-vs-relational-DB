@@ -4,46 +4,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Song Search</title>
+  <title>ELASTICSEARCH vs POSTGRESQL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <script src="https://unpkg.com/htmx.org@1.9.4"></script>
 </head>
 <body>
-    Search Contacts 
+    <h1>ELASTICSEARCH vs POSTGRESQL</h1><br>
+    <h1><b>Step 1.</b></h1>
+    <div>
+        <h2>Load data into databases:</h2>
+        <form hx-post="/load" hx-indicator=".htmx-indicator">
+          <label for="reviews">Number of reviews to load (from 0 to 500000):</label><br>
+          <input type="number" id="reviews" name="reviews" value="100000"><br><br>
+          <button type="submit">Load</button>
+        </form>
+    </div>
+
+    <!--indicator-->
     <span class="htmx-indicator"> 
-      <img src="/img/bars.svg"/> Searching... 
-     </span> 
-    <h1>Data Loading and Searching</h1>
-    <!-- Load data section -->
-    <div>
-        <h2>Load data:</h2>
-        <button  hx-get="/loades" hx-indicator=".htmx-indicator">Load data</button>
-    </div>
-    <!-- Search data section -->
-    <div>
-        <h2>Search data:</h2>
-        <input type="text" class="input" placeholder="Search" name="q" hx-get="/es-search" hx-trigger="keyup changed delay:500ms" hx-target="#results"  hx-indicator=".htmx-indicator">
-    </div>
-    <div id="results">
-
-    </div>
-
+      <img src="{{ url_for('static', filename='images/bars.svg') }}" width="100" height="100"/>
+    </span> 
+    
+    <h1><b>Step 2.</b></h1>
     <h1>ApacheBench Test Interface</h1>
-    <form hx-post="/test-endpoint" hx-target="#result">
-         <!-- Hidden URL field -->
-        <input type="hidden" id="url" name="url" value="http://flask_app/es-search?q=uber">
+    <table border="5">
+      <tr>
+          <th>Elasticsearch Test</th>
+          <th>PostgreSQL Test</th>
+      </tr>
+      <tr>
+          <td>
+              <form hx-post="/test-endpoint" hx-target="#es-result" hx-indicator=".htmx-indicator">
+                  <input type="hidden" id="url-es" name="url" value="http://flask_app:4000/es-search?q=">
+                  <label for="search-es">Search:</label><br>
+                  <input type="text" id="search-es" name="search-es" placeholder="Search Elasticsearch"><br><br>
+                  <button hx-get="/es-search" hx-include="[name='search-es']" hx-target="#search-results" type="button">See data</button><br><br>
+                  <label for="total_requests-es">Total Requests:</label><br>
+                  <input type="number" id="total_requests-es" name="total_requests" value="1000"><br><br>
+                  <label for="concurrency-es">Concurrency:</label><br>
+                  <input type="number" id="concurrency-es" name="concurrency" value="10"><br><br>
+                  <button type="submit">Start Elasticsearch Test</button>
+              </form>
+              <div id="es-result"> 
+                  <!-- Results will appear here -->
+              </div>
+          </td>
+          <td>
+              <form hx-post="/test-endpoint" hx-target="#pg-result" hx-indicator=".htmx-indicator">
+                  <input type="hidden" id="url-es" name="url" value="http://flask_app:4000/pg-search?q=">
+                  <label for="search-pg">Search:</label><br>
+                  <input type="text" id="search-pg" name="search-pg" placeholder="Search PostgreSQL"><br><br>
+                  <button hx-get="/pg-search" hx-include="[name='search-pg']" hx-target="#search-results" type="button">See data</button><br><br>
+                  <label for="total_requests-es">Total Requests:</label><br>
+                  <input type="number" id="total_requests-pg" name="total_requests" value="1000"><br><br>
+                  <label for="concurrency-es">Concurrency:</label><br>
+                  <input type="number" id="concurrency-pg" name="concurrency" value="10"><br><br>
+                  <button type="submit">Start PostgreSQL Test</button>
+              </form>
+              <div id="pg-result">
+                  <!-- Results will appear here -->
+              </div>
+          </td>
+      </tr>
+    </table>
 
-        <label for="total_requests">Total Requests:</label><br>
-        <input type="number" id="total_requests" name="total_requests" value="1000"><br><br>
+    <h2>Search results:</h2>
+    <div id="search-results">
 
-        <label for="concurrency">Concurrency:</label><br>
-        <input type="number" id="concurrency" name="concurrency" value="10"><br><br>
-
-        <button type="submit">Start Test</button>
-    </form>
-    <div id="result">
-      <!-- Results will appear here -->
     </div>
+
+    <script>
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            let resultDivId = evt.detail.target.id === 'es-result' ? 'es-result' : 'pg-result';
+            let data = JSON.parse(evt.detail.xhr.response);
+            let formattedOutput = data.output.replace(/\\n/g, '<br>');
+            document.getElementById(resultDivId).innerHTML = `<pre>${formattedOutput}</pre>`;
+        });
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'search-results') {
+            document.getElementById('search-results').scrollIntoView({ behavior: 'smooth' });
+        }
+        if (event.detail.target.id === 'pg-result') {
+            document.getElementById('pg-result').scrollIntoView({ behavior: 'smooth' });
+        }
+        if (event.detail.target.id === 'es-result') {
+            document.getElementById('es-result').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+    </script>
+
 
 </body>
 
