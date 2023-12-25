@@ -2,7 +2,7 @@
 
 This repository contains a small Flask application that compares the performance of a full-text search engine like Elasticsearch with a relational database like PostgreSQL.
 
-Techology used:
+Technology used:
 - [**Flask**](https://flask.palletsprojects.com/en/3.0.x/): lightweight and flexible web application framework for Python
 - [**Htmx**](https://htmx.org/): a modern web development tool that allows you to access AJAX, CSS Transitions, WebSockets, and server-sent events directly in HTML, using attributes
 - [**PostgreSQL**](https://www.postgresql.org/): open-source, advanced object-relational database management system (DBMS)
