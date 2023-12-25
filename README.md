@@ -15,7 +15,7 @@ Technology used:
 
 Firstly, you need to clone this repository into an empty folder on your machine:
 ```shell
-git clone 
+git clone https://github.com/abyssis11/full-text-search-engine-vs-relational-DB.git
 ```
 
 Then, you can build and start Docker containers with:
