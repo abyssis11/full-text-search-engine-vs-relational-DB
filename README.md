@@ -18,6 +18,11 @@ Firstly, you need to clone this repository into an empty folder on your machine:
 git clone https://github.com/abyssis11/full-text-search-engine-vs-relational-DB.git
 ```
 
+Then position yourself inside the cloned repository:
+```shell
+cd full-text-search-engine-vs-relational-DB/
+```
+
 Then, you can build and start Docker containers with:
 ```shell
 sudo docker-compose up --build
@@ -28,6 +33,16 @@ All application dependencies are installed inside the containers and can be foun
 After executing the previous command, all Docker containers should start. **NOTE**: It is advised to only test the application after all containers are ready. Specifically, the **Elasticsearch container takes the longest to start**, so wait for it before beginning testing.
 
 Once all containers are ready, the application will be available at http://localhost:4000/
+
+**Things that will go wrong**:
+- Problem: some other services use the same port as one of the containers
+    - Solution: stop and remove that container
+- Problem: some other container uses same name
+    - Solution: stop and remove that container
+- Problem: PostgreSQL container starts before flask_app container
+    - Solution: this happened 1 in 100 times to me, and the simplest solution is to try again
+- Problem: you execute "Load" before the Elasticsearch container finishes initalizing
+    - Solution: be patient and wait a little longer
 
 ### Step 1.
 

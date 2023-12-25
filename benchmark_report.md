@@ -1,6 +1,10 @@
 # Benchmark report: comparison of full-text search engine (Elasticsearch) and relational DB (PostgreSQL)
 
-This benchmark report aims to provide a more in-depth comparison between full-text search and relational databases, specifically between Elasticsearch and PostgreSQL. 
+Faculty of Informatics and Digital Technologies
+
+Author: Deni Kernjus
+
+This benchmark report aims to provide a more in-depth comparison between full-text search and relational databases, specifically between Elasticsearch and PostgreSQL.
 
 **PostgreSQL** is a relational database management system (RDBMS) focusing on ACID compliance and SQL support. It excels in structured data handling, complex queries, and transactional data. Uses SQL and is known for its reliability and robust performance in transactional systems. It is ideal for applications requiring complex data relationships and data integrity.
 
