@@ -31,7 +31,7 @@ Once all containers are ready, the application will be available at http://local
 
 ### Step 1.
 
-The first step is to load data into the databases. For testing, we're using a dataset containing 500,000 Uber reviews and the names of the review authors. This dataset was acquired from https://www.kaggle.com/datasets/bwandowando/1-5-million-uber-app-google-store-reviews and modified to suit our testing needs.
+The first step is to load data into the databases. For testing, we're using a dataset containing 500,000 Uber reviews. This dataset was acquired from https://www.kaggle.com/datasets/bwandowando/1-5-million-uber-app-google-store-reviews and modified to suit our testing needs.
 
 You have the option to select the number of reviews (rows or documents) to be added to the databases, with the default set to 100,000. Upon clicking the "Load" button, both PostgreSQL and Elasticsearch databases will be populated with the same data.
 
